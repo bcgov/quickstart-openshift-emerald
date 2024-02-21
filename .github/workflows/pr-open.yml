@@ -17,6 +17,7 @@ jobs:
       packages: write
     outputs:
       digest: ${{ steps.builds.outputs.digest }}
+      sha: ${{ github.sha }}
     strategy:
       matrix:
         package: [migrations, backend, frontend]
@@ -36,7 +37,7 @@ jobs:
           repository: ${{ github.repository }}/${{ matrix.package }}
           target: ${{ github.event.number }}
           tags: |
-            ${{ steps.builds.outputs.digest }}
+            ${{ github.sha }}
 
   # https://github.com/bcgov-nr/action-deployer-openshift
   deploys:
@@ -77,7 +78,7 @@ jobs:
           DEPLOYMENT_NUMBER=${{ steps.get-deployment-number.outputs.DEPLOYMENT_NUMBER }}
           cd charts/quickstart-openshift-emerald
           yq eval '.global.enabled = true' -i values-$DEPLOYMENT_NUMBER.yaml
-          yq -i '.global.tag = ${{ needs.builds.outputs.digest }}' -i values-$DEPLOYMENT_NUMBER.yaml
+          yq -i '.global.tag = ${{ needs.builds.outputs.sha }}' -i values-$DEPLOYMENT_NUMBER.yaml
 
 
       - name: Commit and push update
