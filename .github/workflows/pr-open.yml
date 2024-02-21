@@ -70,8 +70,8 @@ jobs:
         run: |
           DEPLOYMENT_NUMBER=${{ steps.get-deployment-number.outputs.DEPLOYMENT_NUMBER }}
           cd charts/quickstart-openshift-emerald
-          yq eval '.global.enabled = true' -i values-$DEPLOYMENT_NUMBER.yaml
-          yq -i '.global.tag = ${{ needs.builds.outputs.sha }}' -i values-$DEPLOYMENT_NUMBER.yaml
+          yq eval '.global.enabled= true' -i values-"$DEPLOYMENT_NUMBER".yaml
+          yq eval '.global.tag= "${{ needs.builds.outputs.sha }}' -i values-"$DEPLOYMENT_NUMBER".yaml
 
 
       - name: Commit and push update
