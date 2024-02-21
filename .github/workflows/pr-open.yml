@@ -45,14 +45,12 @@ jobs:
     needs: [builds]
     runs-on: ubuntu-22.04
     steps:
-
       - name: Checkout CD repo
         uses: actions/checkout@v4
         with:
           repository: bcgov-c/tenant-gitops-a7469b
           ssh-key: ${{ secrets.DEPLOY_KEY }}
           ref: main
-
       - name: Calculate Deployment Number
         id: get-deployment-number
         shell: bash
@@ -60,7 +58,6 @@ jobs:
           PR_NUMBER=$(echo ${{ github.event.number }})
           PR_NUMBER_MOD_FIVE=$(($PR_NUMBER % 5))
           echo "DEPLOYMENT_NUMBER=$(($PR_NUMBER_MOD_FIVE + 1))" >> $GITHUB_OUTPUT
-          
 
       - name: Configure git
         # From https://github.com/orgs/community/discussions/26560#discussioncomment-3531273
