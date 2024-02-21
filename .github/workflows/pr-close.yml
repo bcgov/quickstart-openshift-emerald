@@ -13,39 +13,45 @@ jobs:
   # Clean up OpenShift when PR closed, no conditions
   cleanup-openshift:
     name: Cleanup OpenShift
-    env:
-      release: ${{ github.event.repository.name }}-${{ github.event.number }}
     runs-on: ubuntu-22.04
-    timeout-minutes: 10
     steps:
-      - name: Remove OpenShift artifacts
-        run: |
-          oc login --token=${{ secrets.OC_TOKEN }} --server=${{ vars.OC_SERVER }}
-          oc project ${{ vars.OC_NAMESPACE }} # Safeguard!
-
-          # If found, then remove
-          helm status ${{ env.release }} && helm uninstall --no-hooks ${{ env.release }} || \
-            echo "Not found: ${{ env.release }}"
-
-          # Remove Bitnami Crunchy PVCs
-          oc delete pvc data-${{ env.release }}-bitnami-pg-0 || \
-            echo "Not found: pvc data-${{ env.release }}-bitnami-pg-0"
-
-  # Add tags to PR image
-  retags:
-    name: Promote Images
-    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
-    runs-on: ubuntu-22.04
-    permissions:
-      packages: write
-    strategy:
-      matrix:
-        package: [migrations, backend, frontend]
-    timeout-minutes: 1
-    steps:
-      - uses: shrink/actions-docker-registry-tag@v4
+      - name: Setup gitops repo access
+        uses: webfactory/ssh-agent@v0.8.0
         with:
-          registry: ghcr.io
-          repository: ${{ github.repository }}/${{ matrix.package }}
-          target: ${{ github.event.number }}
-          tags: latest
+          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
+
+      - name: Checkout CD repo
+        uses: actions/checkout@v4
+        with:
+          repository: bcgov-c/tenant-gitops-a7469b
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+          ref: main
+
+      - name: Calculate Deployment Number
+        id: get-deployment-number
+        shell: bash
+        run: |
+          PR_NUMBER=$(echo ${{ github.event.number }})
+          PR_NUMBER_MOD_FIVE=$(($PR_NUMBER % 5))
+          echo "DEPLOYMENT_NUMBER=$(($PR_NUMBER_MOD_FIVE + 1))" >> $GITHUB_OUTPUT
+
+
+      - name: Configure git
+        # From https://github.com/orgs/community/discussions/26560#discussioncomment-3531273
+        run: |
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Update image tag And Enable it for deployment
+        run: |
+          DEPLOYMENT_NUMBER=${{ steps.get-deployment-number.outputs.DEPLOYMENT_NUMBER }}
+          cd charts/quickstart-openshift-emerald
+          yq eval '.global.enabled = false' -i values-$DEPLOYMENT_NUMBER.yaml
+
+      - name: Commit and push update
+        shell: bash
+        run: |
+          git commit -am "Update image tag for pull request deployment and enable it."
+          git push origin main
+
