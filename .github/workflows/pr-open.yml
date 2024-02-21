@@ -45,10 +45,6 @@ jobs:
     needs: [builds]
     runs-on: ubuntu-22.04
     steps:
-      - name: Setup gitops repo access
-        uses: webfactory/ssh-agent@v0.8.0
-        with:
-          ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
       - name: Checkout CD repo
         uses: actions/checkout@v4
