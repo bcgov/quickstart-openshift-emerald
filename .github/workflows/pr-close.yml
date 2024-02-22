@@ -47,11 +47,11 @@ jobs:
         run: |
           DEPLOYMENT_NUMBER=${{ steps.get-deployment-number.outputs.DEPLOYMENT_NUMBER }}
           cd charts/quickstart-openshift-emerald
-          yq eval '.global.enabled = false' -i values-$DEPLOYMENT_NUMBER.yaml
+          yq eval '.global.enabled=false' -i values-"$DEPLOYMENT_NUMBER".yaml
 
       - name: Commit and push update
         shell: bash
         run: |
-          git commit -am "Update image tag for pull request deployment and enable it."
+          git commit -am "removing the deployment and disable it for values-${{ steps.get-deployment-number.outputs.DEPLOYMENT_NUMBER }}.yaml"
           git push origin main
 
