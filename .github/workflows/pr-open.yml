@@ -80,6 +80,7 @@ jobs:
           git commit -am "Update image tag for pull request deployment and enable it for values-${{ steps.get-deployment-number.outputs.DEPLOYMENT_NUMBER }}.yaml"
           git push origin main
 
+
   validate:
     name: Validate
     needs: [deploys]
