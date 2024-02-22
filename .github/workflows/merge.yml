@@ -39,6 +39,13 @@ jobs:
           repository: bcgov-c/tenant-gitops-a7469b
           ssh-key: ${{ secrets.DEPLOY_KEY }}
           ref: main
+      - name: Configure git
+        # From https://github.com/orgs/community/discussions/26560#discussioncomment-3531273
+        run: |
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
       - name: Update image tag And Enable it for deployment
         run: |
           cd charts/quickstart-openshift-emerald
@@ -62,6 +69,12 @@ jobs:
           repository: bcgov-c/tenant-gitops-a7469b
           ssh-key: ${{ secrets.DEPLOY_KEY }}
           ref: main
+      - name: Configure git
+        # From https://github.com/orgs/community/discussions/26560#discussioncomment-3531273
+        run: |
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Update image tag And Enable it for deployment
         run: |
           cd charts/quickstart-openshift-emerald
