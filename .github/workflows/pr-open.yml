@@ -17,6 +17,7 @@ jobs:
       packages: write
     outputs:
       digest: ${{ steps.builds.outputs.digest }}
+      sha: ${{ github.sha }}
     strategy:
       matrix:
         package: [migrations, backend, frontend]
@@ -30,24 +31,62 @@ jobs:
           tag: ${{ github.event.number }}
           tag_fallback: latest
           triggers: ('${{ matrix.package }}/')
+      - uses: shrink/actions-docker-registry-tag@v4
+        with:
+          registry: ghcr.io
+          repository: ${{ github.repository }}/${{ matrix.package }}
+          target: ${{ github.event.number }}
+          tags: |
+            ${{ github.sha }}
 
   # https://github.com/bcgov-nr/action-deployer-openshift
   deploys:
     name: Deploys
     needs: [builds]
-    uses: ./.github/workflows/.deploy.yml
-    secrets: inherit
-    with:
-      build_outputs: ${{ needs.builds.outputs.digest }}
-      tag: ${{ github.event.number }}
-      release: ${{ github.event.number }}
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout CD repo
+        uses: actions/checkout@v4
+        with:
+          repository: bcgov-c/tenant-gitops-a7469b
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+          ref: main
+      - name: Calculate Deployment Number
+        id: get-deployment-number
+        shell: bash
+        run: |
+          PR_NUMBER=$(echo ${{ github.event.number }})
+          PR_NUMBER_MOD_FIVE=$(($PR_NUMBER % 5))
+          echo "DEPLOYMENT_NUMBER=$(($PR_NUMBER_MOD_FIVE + 1))" >> $GITHUB_OUTPUT
+
+      - name: Configure git
+        # From https://github.com/orgs/community/discussions/26560#discussioncomment-3531273
+        run: |
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Update image tag And Enable it for deployment
+        run: |
+          DEPLOYMENT_NUMBER=${{ steps.get-deployment-number.outputs.DEPLOYMENT_NUMBER }}
+          cd charts/quickstart-openshift-emerald
+          yq eval '.global.enabled=true' -i values-"$DEPLOYMENT_NUMBER".yaml
+          yq eval '.global.tag="${{ needs.builds.outputs.sha }}"' -i values-"$DEPLOYMENT_NUMBER".yaml
+
+
+      - name: Commit and push update
+        shell: bash
+        run: |
+          git commit -am "Update image tag for pull request deployment and enable it for values-${{ steps.get-deployment-number.outputs.DEPLOYMENT_NUMBER }}.yaml"
+          git push origin main
+
 
   validate:
     name: Validate
     needs: [deploys]
     if: always() && (!cancelled()) && (!failure())
     env:
-      DOMAIN: apps.silver.devops.gov.bc.ca
+      DOMAIN: apps.emerald.devops.gov.bc.ca
       PREFIX: ${{ github.event.repository.name }}
     permissions:
       pull-requests: write

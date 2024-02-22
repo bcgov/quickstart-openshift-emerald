@@ -31,26 +31,48 @@ jobs:
   deploy-test:
     name: Deploy (test)
     needs: [vars]
-    uses: ./.github/workflows/.deploy.yml
-    secrets: inherit
-    with:
-      environment: test
-      tag: ${{ needs.vars.outputs.pr }}
-      release: test
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout CD repo
+        uses: actions/checkout@v4
+        with:
+          repository: bcgov-c/tenant-gitops-a7469b
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+          ref: main
+      - name: Update image tag And Enable it for deployment
+        run: |
+          cd charts/quickstart-openshift-emerald
+          yq eval '.global.tag="${{ needs.vars.outputs.pr }}"' -i values.yaml
+
+
+      - name: Commit and push update
+        shell: bash
+        run: |
+          git commit -am "Update image tag for pull request deployment and enable it for values.yaml for TEST deployment"
+          git push origin main
 
   deploy-prod:
     name: Deploy (prod)
     needs: [deploy-test, vars]
-    uses: ./.github/workflows/.deploy.yml
-    secrets: inherit
-    with:
-      autoscaling: true
-      environment: prod
-      tag: ${{ needs.vars.outputs.pr }}
-      release: prod
-      params:
-        --set backend.deploymentStrategy.type=RollingUpdate
-        --set frontend.deploymentStrategy.type=RollingUpdate
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout CD repo
+        uses: actions/checkout@v4
+        with:
+          repository: bcgov-c/tenant-gitops-a7469b
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+          ref: main
+      - name: Update image tag And Enable it for deployment
+        run: |
+          cd charts/quickstart-openshift-emerald
+          yq eval '.global.tag="${{ needs.vars.outputs.pr }}"' -i values-prod.yaml
+
+
+      - name: Commit and push update
+        shell: bash
+        run: |
+          git commit -am "Update image tag for pull request deployment and enable it for values-prod.yaml for PROD deployment"
+          git push origin main
 
   promote:
     name: Promote Images
