@@ -15,6 +15,7 @@ Limitations:
 - Since Argo Depends on pre-defined HELM charts, the PR pipeline is  tweaked with MOD 5 to allow 5 concurrent PRs to be deployed to the cluster.
 - ScreenShot below.<img src="./.graphics/ArgoCD.png" width="100%" height="100%" />
 - If team needs more, then depending on available resources in the cluster, the MOD can be increased to 10 to do 10 concurrent PR deployments. 
+- Currently, the ArgoCD is polling the tenant repos every 3 minutes for changes, so the changes will be reflected in the cluster within 3 to 6 minutes of the PR creation or main merge.
 ### Resources
 This repository is provided by NRIDS Architecture and Forestry Digital Services, courtesy of the Government of British Columbia.
 
