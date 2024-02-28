@@ -9,6 +9,8 @@ Additional config/features to make Quickstart OpenShift Emerald Cluster Compatib
 - HELM charts for application deployments reside in bcgov-c organization.
 - Sample HELM repo which holds the charts for the application deployments [Here](https://github.com/bcgov-c/tenant-gitops-a7469b). 
 - Follow this link to see the [ArgoCD Setup](https://docs.developer.gov.bc.ca/argo-cd-usage/)
+- Emerald is closed by nature for any traffic, teams must define explicit KNP and Ingress rules to allow traffic to the application.
+- Teams must understand Security Constraints when using Emerald Cluster and apply it appropriately to each component. Follow this link(IDIR protected) to learn details around Emerald cluster [Here](https://digital.gov.bc.ca/cloud/services/private/internal-resources/emerald/)
 
 Limitations:
 - GitHub Actions is not available for Emerald Cluster, so ArgoCD is used for GitOps.
