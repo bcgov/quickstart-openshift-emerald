@@ -73,6 +73,16 @@ export default function Dashboard() {
       }}
     >
       <DataGrid
+        sx={{
+          '& .MuiDataGrid-toolbarContainer': {
+            border: '1px solid #385a8a',
+            backgroundColor: '#385a8a',
+            color: '#ffffff',
+          },
+          '& .MuiInputBase-root': {
+            backgroundColor: '#ffffff',
+          },
+        }}
         slots={{ toolbar: GridToolbar }}
         slotProps={{
           toolbar: {
