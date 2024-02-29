@@ -28,7 +28,7 @@ export default function Header() {
     <AppBar position="fixed" sx={styles.appBar}>
       <Toolbar sx={{ justifyContent: 'space-between' }}>
         <img style={{ maxHeight: '60px' }} alt="Logo" src={BCGovLogo} />
-        <Typography sx={{ color: '#2a4679' }}>Quickstart OpenShift Emerald</Typography>
+        <Typography sx={{ color: '#2a4679' }}>Quickstart OpenShift Emerald - TEST PR</Typography>
         <a href={'/'} target={'_self'}>
           <IconButton color="secondary">
             <HomeRounded color="secondary"></HomeRounded>
