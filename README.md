@@ -1,3 +1,4 @@
+# Archived - Please follow https://github.com/bcgov/nr-compliance-enforcement for Emerald deployments
 # QuickStart for OpenShift Emerald
 
 ## Pull Request-Based Workflows with Sample Stack Targeted for Emerald Cluster
